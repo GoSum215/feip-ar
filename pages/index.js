@@ -140,7 +140,7 @@ export default function Page( {items} ) {
 
 export async function getServerSideProps() {
 
-  const items = await prisma.item.findMany({ take: 10, })
+  const items = await prisma.item.findMany({ take: 4, })
   
   return {
       props: {

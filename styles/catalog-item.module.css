@@ -316,7 +316,8 @@ div.scroll_photo img {
     .ar_button {
         font-size: 4.8vw;
         line-height: 5.6vw;
-        margin: 0;
+        margin-left: auto;
+        margin-right: auto;
         padding: 1.4vw;
         width: 91%;
         display: flex;
@@ -329,14 +330,14 @@ div.scroll_photo img {
     }
     
     .designer {
-        margin: 4.8vw 0;
+        margin: 4.8vw auto;
         width: 91%;
         font-size: 4.8vw;
         line-height: 5.6vw;
     }
     
     .link_telegram {
-        margin: 0;
+        margin: 0 auto;
         font-size: 4vw;
         width: 91%;
     }

@@ -545,7 +545,7 @@ div.card {
     }
     
     div.card {
-        height: 50vw;
+        min-height: 50vw;
         width: 37vw;
         margin: 3.5vw;
     }
