@@ -1,11 +1,47 @@
 <!doctype html>
 <html>
     <head>
-        <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
+        <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+        <script src="https://unpkg.com/aframe-transparent-video-shader@1.0.3/dist/aframe-transparent-video-shader.umd.js"></script>
         <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
         <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-detector.js"></script>
         <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-handler.js"></script>
+        <style>
+            #playButtonDIV{
+                z-index: 1;
+                position: absolute;
+                display: none;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            #playButton {
+                width: 48px;
+                height: 50px;
+                border: 0px solid black;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            #playButton img{
+                height: 100%;
+                width: 100%;
+                margin-left: 5px;
+            }
+
+            
+            #scene{
+                z-index: -1;
+            }
+
+        </style>
         <script>
+            var markerFound = 0;
+            let n;
             AFRAME.registerComponent('videohandler', {
                 init: function () {
                     var marker = this.el;
@@ -20,12 +56,55 @@
                         this.toggle = false;
                         this.vid.pause();
                     }.bind(this));
+
+                    
+                    var elem = document.documentElement;
+                    var marker = document.querySelector("#markerA");
+                    var Video = document.getElementsByClassName("video_asset");
+                    var videoButton = document.getElementsByClassName("video_button");
+
+                    videoButton[0].addEventListener('click', function(evt){
+                        let music = document.getElementById('music')
+                        music.volume = 0.3;
+                        music.play()
+                        document.getElementById('playButtonDIV').style.display = 'none';
+                        Video[curVideo].muted = false;
+                        firstEnter = false;
+                        Video[curVideo].play();
+                    })
+
+                    marker.addEventListener("markerFound", function (evt) {
+                        markerFound = 1;
+
+                        if(firstEnter){
+                            document.getElementById('playButtonDIV').style.display = 'flex';
+                        }
+
+                        else if(document.getElementById('playButtonDIV').style.display == 'none'){
+                            Video[curVideo].play();
+                        }
+
+                    });
+
+                    marker.addEventListener("markerLost", function (evt) {
+                        markerFound = 0;
+                        document.getElementById('playButtonDIV').style.display = 'none';
+                        Video[curVideo].pause();
+                    });
                 },
             });
+            
         </script>
     </head>
 
     <body style="margin: 0; overflow: hidden;">
+        <audio id="music" src="assets/music1.mp3"></audio>
+        <div id="playButtonDIV" style="display: none">
+            <button class="video_button" id="playButton" style='left: 10px;'>
+                <img src="ar/play.png">
+            </button>
+        </div>
+
         <a-scene
             vr-mode-ui="enabled: false"
             loading-screen="enabled: false;"
@@ -37,13 +116,13 @@
             <a-assets>
                 <video
                     id="vid"
+                    class="video_asset"
                     src="ar_assets/ar16.webm"
                     preload="auto"
                     response-type="arraybuffer"
                     loop
                     crossorigin
                     webkit-playsinline
-                    autoplay
                     muted
                     playsinline
                 ></video>
@@ -55,7 +134,7 @@
                 url="ar/cyber-p.patt"
                 videohandler
                 smooth="true"
-                smoothCount="10"
+                smoothCount="20"
                 smoothTolerance="0.01"
                 smoothThreshold="5"
                 raycaster="objects: .clickable"
@@ -65,15 +144,21 @@
             >
                 <a-video
                     src="#vid"
-                    scale="1 1 1"
+                    id="AR_Video"
+                    scale="0.1 0.1 0.1"
+                    width="9"
+                    height="16" 
                     position="0 0.1 0"
                     rotation="-90 0 0"
                     class="clickable"
-                    gesture-handler
+                    material="shader: transparent-video;"
                 ></a-video>
             </a-marker>
 
-            <a-entity camera></a-entity>
+            <a-entity 
+                material="shader: transparent-video; src: #vid"
+                camera
+            ></a-entity>
         </a-scene>
     </body>
 </html>
