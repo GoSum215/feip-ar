@@ -5,6 +5,7 @@ import {useEffect, useState} from 'react';
 import Layout from '../../components/layout';
 import { prisma } from "../../server/db/client"
 import Head from "next/head";
+import { useRouter } from 'next/router';
 
 export default function Page( {items} ) {
     const [isFilter, setIsFilter] = useState(false);
@@ -15,16 +16,16 @@ export default function Page( {items} ) {
     const filterWindowClick = () => {
         setIsFilter(isFilter => !isFilter)
         setIsArrow1(isArrow1 => !isArrow1)
-        setIsSort(isSort => false)
-        setIsArrow2(isArrow2 => false)
+        setIsSort(false)
+        setIsArrow2(false)
         //console.log(isSort + " + 1")
     }
 
     const sortWindowClick = () => {
         setIsSort(isSort => !isSort)
         setIsArrow2(isArrow2 => !isArrow2)
-        setIsFilter(isFilter => false)
-        setIsArrow1(isArrow1 => false)
+        setIsFilter(false)
+        setIsArrow1(false)
         //console.log(isSort + " + 1")
     }
 
@@ -47,12 +48,21 @@ export default function Page( {items} ) {
         console.log("other is " + isOther)
     }
 
+    const router = useRouter();
+    
+
     const sortNew = () => {
         setIsNew(true)
+        router.replace({
+            query: { ...router.query, sort: 'new' },
+        });
     }
 
     const sortOld = () => {
         setIsNew(false)
+        router.replace({
+            query: { ...router.query, sort: 'old' },
+        });
     }
 
     return (
@@ -76,7 +86,7 @@ export default function Page( {items} ) {
                 </div>
             </div>
 
-            <div className={styles.filters + ' ' + styles.hidden_card}>
+            <div className={styles.filters}>
                 <div className={styles.filter_mobile} id={styles.filter_m} onClick={filterWindowClick}>
                     <p className={styles.filter_title_mobile} id={styles.filterName}>ФИЛЬТРЫ</p>
                     <div id={styles.arrow1} className={isArrow1 ? styles.arrow_open + ' ' + styles.arrow : styles.arrow}></div>
@@ -89,18 +99,18 @@ export default function Page( {items} ) {
                     <p className={styles.filter_title}>ДЛЯ КОГО?</p>
                     <form method="get" id={styles.filterForm}>
                         <div className={styles.radio_div} onClick={filterWoman}>
-                            <input type="checkbox" className={styles.custom_checkbox} id={styles.woman} name="filt" value="1" /> {/* onchange=""  */}
-                            <label htmlFor="woman">женская</label>
+                            <input type="checkbox" className={styles.custom_checkbox} id={styles.woman} name="woman" value="1" /> {/* onchange=""  */}
+                            <label for="woman">женская</label>
                         </div>
 
                         <div className={styles.radio_div} onClick={filterMan}>
-                            <input type="checkbox" className={styles.custom_checkbox} id={styles.man} name="filt" value="2" />
-                            <label htmlFor="man">мужская</label>
+                            <input type="checkbox" className={styles.custom_checkbox} id={styles.man} name="man" value="2" />
+                            <label for="man">мужская</label>
                         </div>
 
                         <div className={styles.radio_div} onClick={filterOther}>
-                            <input type="checkbox" className={styles.custom_checkbox} id={styles.different} name="filt" value="3" />
-                            <label htmlFor="different">унисекс</label>
+                            <input type="checkbox" className={styles.custom_checkbox} id={styles.different} name="different" value="3" />
+                            <label for="different">унисекс</label>
                         </div>
                     </form>
                 </div>
@@ -108,13 +118,13 @@ export default function Page( {items} ) {
                     <p className={styles.filter_title} id={styles.sort_title}>СОРТИРОВКА</p>
                     <form method="get" id={styles.sortForm}>
 
-                        <div className={styles.radio_div}>
-                            <input type="radio" className={styles.custom_checkbox} id={styles.new} name="sort" value="1" checked onClick={sortNew} />
+                        <div className={styles.radio_div} onClick={sortNew}>
+                            <input type="checkbox" className={styles.custom_checkbox} id={styles.new} name="sort" value="1" />
                             <label htmlFor="new">сначала новые</label>
                         </div>
 
-                        <div className={styles.radio_div}>
-                            <input type="radio" className={styles.custom_checkbox} id={styles.old} name="sort" value="2" onClick={sortNew} />
+                        <div className={styles.radio_div} onClick={sortOld}>
+                            <input type="checkbox" className={styles.custom_checkbox} id={styles.old} name="sort" value="2" />
                             <label htmlFor="old">сначала старые</label>
                         </div>
                     </form>
@@ -146,13 +156,24 @@ export default function Page( {items} ) {
     );
 }
 
-export async function getServerSideProps() {
+export async function getServerSideProps( context ) {
+    console.log(context.query.sort)
+    console.log(context.query.sort == 'new')
+    const sort = (context.query.sort === 'old' ? 'desc' : 'asc')
+    // const gen = parseInt(context.query.gender ||= '0')
 
     const items = await prisma.item.findMany({
-        // orderBy:
-        // {
-        //     createdAt: isNew ? 'desc' : 'asc',
+        // where : {
+        //     'gender' : gen
         // },
+        orderBy : [
+            {
+                'createdAt' : sort
+            },
+            {
+                'id' : sort
+            }
+        ]
     })
     
     return {

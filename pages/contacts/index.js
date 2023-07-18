@@ -16,19 +16,19 @@ export default function Page() {
                         <a className={styles.left_h1_bottom}>ПРЯМО СЕЙЧАС</a>
                     </div>
                     <div className={styles.cont_left_h2}>Оставьте заявку и мы свяжемся с вами в ближайшее время.</div>
-                    <div className={styles.success}>Обращение отправленно успешно</div>
+                    {/* <div className={styles.success}>Обращение отправленно успешно</div> */}
                     <div className={styles.form_name}>ВАШЕ ИМЯ</div>
                     <div className={styles.form}><input type="text" name="username" placeholder="Мария" /></div> {/* value=""  */}
-                    <div className={styles.error}>Ошибка ввода</div>
+                    {/* <div className={styles.error}>Ошибка ввода</div> */}
                     <div className={styles.form_name}>ВАША ЭЛЕКТРОННАЯ ПОЧТА</div>
                     <div className={styles.form}><input type="email"  name="useremail" placeholder="maria090@gmail.com" /></div> {/* value=""  */}
-                    <div className={styles.error}>Ошибка ввода</div>
+                    {/* <div className={styles.error}>Ошибка ввода</div> */}
                     <div className={styles.form_name}>НОМЕР ТЕЛЕФОНА</div>
                     <div className={styles.form}><input type="text" name="theme" placeholder="+70000000000" /></div> {/* value=""  */}
-                    <div className={styles.error}>Ошибка ввода</div>
+                    {/* <div className={styles.error}>Ошибка ввода</div> */}
                     <div className={styles.form_name}>ТЕКСТ ПИСЬМА</div>
                     <div className={styles.form_message}><textarea name="message" placeholder="Добрый день! Очень нравится ваш проект, хотела бы предложить сотрудничество. Можете рассказать об условиях?"></textarea></div>
-                    <div className={styles.error}>Ошибка ввода</div>
+                    {/* <div className={styles.error}>Ошибка ввода</div> */}
                     <button form="contact_form" className={styles.form_btn}>ОТПРАВИТЬ ПИСЬМО</button> {/* href="/" */}
                     <div className={styles.personal_data}>Нажимая кнопку, вы даете согласие на <a className={styles.link} href="#">обработку персональных данных</a></div>
                 </div>
