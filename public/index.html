@@ -1,111 +1,375 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
     <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
         <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
         <script src="https://unpkg.com/aframe-transparent-video-shader@1.0.3/dist/aframe-transparent-video-shader.umd.js"></script>
         <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
         <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-detector.js"></script>
         <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-handler.js"></script>
-        <style>
-            #playButtonDIV{
-                z-index: 1;
-                position: absolute;
-                display: none;
-                height: 100%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            
-            #playButton {
-                width: 48px;
-                height: 50px;
-                border: 0px solid black;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
+        <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.0.0/dist/aframe-extras.min.js"></script>
+    </head>
+    <style>
 
-            #playButton img{
-                height: 100%;
-                width: 100%;
-                margin-left: 5px;
-            }
+        body{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    
+        #playButtonDIV{
+            z-index: 1;
+            position: absolute;
+            display: none;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    
+        #playButton {
+            width: 50px;
+            height: 50px;
+            border: 0px solid black;
+            background-color: #b1a7a5b0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    
+        #playButton img{
+            height: 100%;
+            width: 100%;
+            margin-left: 5px;
+        }
+        
+        #button_container{ 
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            bottom: 20px;
+        }
+        
+        #FullScreenButtonDIV{
+            margin: 10px;
+            text-align: center;
+            display: flex;
+        }
+        #FullScreenButton{
+            z-index: 1;
+            border-radius: 10px;
+            padding: 5px;
+            border: none;
+            height: 50px;
+            width: 50px;
+            background: #b1a7a5b0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    
+        #FullScreenButton img{
+            width: 130%;
+            height: auto;
+            margin-bottom: 3px;
+        }
 
-            
-            #scene{
-                z-index: -1;
-            }
+        #MuteButtonDIV{
+            margin: 10px;
+            text-align: center;
+            display: none;
+        }
 
-        </style>
-        <script>
-            var markerFound = 0;
-            let n;
-            AFRAME.registerComponent('videohandler', {
+        #MuteButton{
+            z-index: 1;
+            border-radius: 10px;
+            border: none;
+            padding: 5px;
+            height: 50px;
+            width: 50px;
+            background: #b1a7a5b0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #MuteButton img{
+            width: 100%;
+            height: auto;
+            margin-bottom: 3px;
+        }
+
+        .modal {
+        position: fixed;
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        margin-top: 200px;
+        transition: all .6s ease;
+        }
+
+        .modal-window{
+            position: relative;
+            z-index: 2;
+            width: 250px;
+            border-radius: 10px;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, .4);
+            background-color: #fff;
+            text-align: center;
+        }
+
+        .touch{
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+        #scene{
+            z-index: -1;
+        }
+    
+    
+    </style>
+    <script>
+ 
+        var fullscreenIOS = 0;
+        window.addEventListener("orientationchange", function() {
+            let isSafari = navigator.vendor.match(/apple/i) &&
+                    !navigator.userAgent.match(/crios/i) &&
+                    !navigator.userAgent.match(/fxios/i) &&
+                    !navigator.userAgent.match(/Opera|OPT\//);
+    
+    
+            if (isSafari && fullscreenIOS == 1) {
+    
+                window.parent.postMessage('1');
+    
+            }
+        }, false);
+    
+        function modal_window_timer(){
+            time = 3
+            document.getElementById('modal-wind').style.marginTop = "-10px";
+            var a = setInterval(function() {
+                if(time == 0){
+                    document.getElementById('modal-wind').style.marginTop = "200px";
+                    clearInterval(a);
+                }
+                time--;
+
+            }, 1000)
+        }
+        function fullscreen() {
+    
+                    let isSafari = navigator.vendor.match(/apple/i) &&
+                    !navigator.userAgent.match(/crios/i) &&
+                    !navigator.userAgent.match(/fxios/i) &&
+                    !navigator.userAgent.match(/Opera|OPT\//);
+    
+                    if (isSafari) {
+    
+                        var button = document.getElementById('imgBTN');
+    
+                        if(fullscreenIOS == 0){
+                            fullscreenIOS = 1;
+                            window.parent.postMessage('1');
+                            button.style.width = "130%"
+                            button.style.height = "auto";
+                            button.style.marginBottom = '0px';
+                            button.src = 'ar/standart-size.png';
+                            modal_window_timer()
+                        }
+                        else{
+                            fullscreenIOS = 0;
+                            window.parent.postMessage('0');
+                            button.style.width = "130%"
+                            button.style.height = "auto";
+                            button.style.marginBottom = '3px';
+                            button.src = 'ar/full-size2.png';
+                        }
+    
+                    } else {
+    
+                        var isInFullScreen = (document.fullscreenElement && document.fullscreenElement !== null) ||
+                        (document.webkitFullscreenElement && document.webkitFullscreenElement !== null) ||
+                        (document.mozFullScreenElement && document.mozFullScreenElement !== null) ||
+                        (document.msFullscreenElement && document.msFullscreenElement !== null);
+    
+                        var button = document.getElementById('imgBTN');
+                        var docElm = document.documentElement;
+                        if (!isInFullScreen) {
+                            button.style.width = "80%"
+                            button.style.height = "80%";
+                            button.style.marginBottom = '0px';
+                            button.src = 'ar/standart-size.png';
+    
+                            modal_window_timer()
+    
+                            if (docElm.requestFullscreen) {
+                                docElm.requestFullscreen();
+                            } else if (docElm.mozRequestFullScreen) {
+                                docElm.mozRequestFullScreen();
+                            } else if (docElm.webkitRequestFullScreen) {
+                                docElm.webkitRequestFullScreen();
+                            } else if (docElm.msRequestFullscreen) {
+                                docElm.msRequestFullscreen();
+                            }
+    
+                        } else {
+                            button.style.width = "130%"
+                            button.style.height = "auto";
+                            button.style.marginBottom = '3px';
+                            button.src = 'ar/full-size2.png';
+    
+    
+                            if (document.exitFullscreen) {
+                                document.exitFullscreen();
+                            } else if (document.webkitExitFullscreen) {
+                                document.webkitExitFullscreen();
+                            } else if (document.mozCancelFullScreen) {
+                                document.mozCancelFullScreen();
+                            } else if (document.msExitFullscreen) {
+                                document.msExitFullscreen();
+                            }
+                        }
+                    }
+                }
+    
+                
+                var markerFound = 0;
+                let n;
+                AFRAME.registerComponent('button', {
                 init: function () {
-                    var marker = this.el;
-                    this.vid = document.querySelector("#vid");
 
-                    marker.addEventListener('markerFound', function () {
-                        this.toggle = true;
-                        this.vid.play();
-                    }.bind(this));
 
-                    marker.addEventListener('markerLost', function () {
-                        this.toggle = false;
-                        this.vid.pause();
-                    }.bind(this));
+                    let i = setInterval(function() {
+                        if (document.querySelector("#arjs-video")){
+                            clearInterval(i);
+                            document.getElementById('playButtonDIV').style.display = 'none';
+                            document.getElementById('MuteButtonDIV').style.display = 'none';
+                            document.getElementById('FullScreenButtonDIV').style.display = 'flex';
+                        }
+                    }, 1500);
 
-                    
+
+
+                    function reset(){
+                        for(let i = 0; i < n; i++){
+                            Video[i].pause();
+                            Video[i].muted = true;
+                            Video[i].currentTime = 0;
+                        }
+                    }
+                    function play() {
+                        for (let i = 0; i < n; i++) {
+                            Video[i].muted = false;
+                            Video[i].play();
+                        }
+                    }
+
+
                     var elem = document.documentElement;
-                    var marker = document.querySelector("#markerA");
+                    var marker = document.querySelector("#marker");
                     var Video = document.getElementsByClassName("video_asset");
                     var videoButton = document.getElementsByClassName("video_button");
 
+                    n = Video.length;
+                    let curVideo = 0;
+                    this.vid = document.querySelector("#vid");
+                    firstEnter = true;
+
                     videoButton[0].addEventListener('click', function(evt){
-                        let music = document.getElementById('music')
-                        music.volume = 0.3;
-                        music.play()
-                        document.getElementById('playButtonDIV').style.display = 'none';
-                        Video[curVideo].muted = false;
-                        firstEnter = false;
-                        Video[curVideo].play();
-                    })
+                            let music = document.getElementById('music')
+                            music.volume = 0.3;
+                            music.play()
+                            document.getElementById('MuteButtonDIV').style.display = 'flex';
+                            document.getElementById('playButtonDIV').style.display = 'none';
+                            this.vid.muted = false;
+                            firstEnter = false;
+                            this.vid.play();
+                    }.bind(this));
 
-                    marker.addEventListener("markerFound", function (evt) {
-                        markerFound = 1;
 
+
+                    var marker = this.el;
+                    this.vid = document.querySelector("#vid");
+
+                    marker.addEventListener('markerFound', function (evt) {
+                        this.toggle = true;
                         if(firstEnter){
                             document.getElementById('playButtonDIV').style.display = 'flex';
                         }
 
                         else if(document.getElementById('playButtonDIV').style.display == 'none'){
-                            Video[curVideo].play();
+                            this.vid.play();
                         }
+                    }.bind(this));
 
-                    });
-
-                    marker.addEventListener("markerLost", function (evt) {
-                        markerFound = 0;
+                    marker.addEventListener('markerLost', function (evt) {
+                        this.toggle = false;
                         document.getElementById('playButtonDIV').style.display = 'none';
-                        Video[curVideo].pause();
-                    });
-                },
+                        this.vid.pause();
+                    }.bind(this));
+                }
             });
-            
-        </script>
-    </head>
 
-    <body style="margin: 0; overflow: hidden;">
-        <audio id="music" src="assets/music1.mp3"></audio>
-        <div id="playButtonDIV" style="display: none">
-            <button class="video_button" id="playButton" style='left: 10px;'>
-                <img src="ar/play.png">
-            </button>
-        </div>
+            function mute(btn,elem){
+                var button = document.getElementById('muteBTN');
+                var video = document.getElementById(elem);
+                if (video.muted){
+                    video.muted = false;
+                    button.src = 'ar/button-sound.png';
+                } else{
+                    video.muted = true;
+                    button.src = 'ar/button-mute.png';
+                }
+            }
+                
+    </script>
+    
+    <body id="MyBody" style='margin : 0; overflow: hidden; font-family: Monospace;'>
+    
+            <audio id="music" src="ar/music1.mp3"></audio>
+    
+            <div id="playButtonDIV" style="display: none">
+                <button class="video_button" id="playButton" style='left: 10px;'>
+                    <img src="ar/play3.png">
+                </button>
+            </div>
+    
+            <div id="button_container">
+                <div id="MuteButtonDIV">
+                    <button id="MuteButton" onclick="mute(this, 'music')">
+                        <img id="muteBTN" src="ar/button-sound.png" alt="">
+                    </button>
+                </div>
+                <div id="FullScreenButtonDIV">
+                    <button id="FullScreenButton" onclick="fullscreen()">
+                        <img id="imgBTN" src="ar/full-size2.png" alt="">
+                    </button>
+                </div>
+            </div>
 
-        <a-scene
+            <div class="touch"></div>
+    
+            <div id="modal-wind" class="modal">
+                <div class="modal-window">
+                    <p>Для большего удобства рекомендуется перейти в горизонтальный режим<p>
+                </div>
+            </div>
+    
+            <a-scene
             vr-mode-ui="enabled: false"
             loading-screen="enabled: false;"
             arjs='sourceType: webcam; debugUIEnabled: false;'
@@ -116,7 +380,6 @@
             <a-assets>
                 <video
                     id="vid"
-                    class="video_asset"
                     src="ar_assets/ar16.webm"
                     preload="auto"
                     response-type="arraybuffer"
@@ -131,8 +394,8 @@
             <a-marker
                 type="pattern"
                 preset="custom"
-                url="ar/cyber-p.patt"
-                videohandler
+                url="assets/marker.patt"
+                button
                 smooth="true"
                 smoothCount="20"
                 smoothTolerance="0.01"
@@ -144,8 +407,7 @@
             >
                 <a-video
                     src="#vid"
-                    id="AR_Video"
-                    scale="0.1 0.1 0.1"
+                    scale="0.3 0.3 0.3"
                     width="9"
                     height="16" 
                     position="0 0.1 0"
@@ -159,6 +421,6 @@
                 material="shader: transparent-video; src: #vid"
                 camera
             ></a-entity>
-        </a-scene>
+        </a-scene>   
     </body>
-</html>
+    </html>
